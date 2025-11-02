@@ -1,4 +1,9 @@
-retrieved_book = Book.objects.get(title="Nineteen Eighty-Four")
-retrieved_book.delete()
+from bookshelf.models import Book
 
-print(list(Book.objects.all()))
+book_to_delete = Book.objects.get(title="Nineteen Eighty-Four")
+
+book_pk = book_to_delete.pk
+
+book_to_delete.delete()
+
+print(list(Book.objects.filter(pk=book_pk)))
