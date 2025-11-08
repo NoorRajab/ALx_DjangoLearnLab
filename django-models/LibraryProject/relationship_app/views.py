@@ -1,43 +1,52 @@
 # relationship_app/views.py
-from django.shortcuts import render, get_object_or_404
-from django.views import View
-from django.views.generic import DetailView
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.views import LoginView, LogoutView
+from django.urls import reverse_lazy
+
+# Import your existing models/views
 from .models import Book, Library
+from django.views.generic import DetailView # Already defined in previous task
 
-def book_list_view(request):
-    """
-    Function-based view to list all books.
-    Renders 'relationship_app/list_books.html'
-    """
-  
-    all_books = Book.objects.all().select_related('author')
+# --- 1. Registration View (Function-Based) ---
+def register_view(request):
+    """Handles user registration using Django's UserCreationForm."""
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Automatically log the user in after successful registration
+            login(request, user)
+            # Redirect to a desired page (e.g., the book list)
+            return redirect('relationship_app:book-list')
+    else:
+        form = UserCreationForm()
     
-    context = {
-        'books': all_books,
-    }
-    
-    
-    return render(request, 'relationship_app/list_books.html', context)
+    context = {'form': form}
+    # Renders the 'relationship_app/register.html' template
+    return render(request, 'relationship_app/register.html', context)
 
 
+# --- 2. Login View (Class-Based - using Django's built-in) ---
+class CustomLoginView(LoginView):
+    """Custom LoginView to specify the template and context."""
+    # Specifies the template to use
+    template_name = 'relationship_app/login.html'
+    
+    # Optional: Specifies the fields to display for the form (default is username and password)
+    # fields = '__all__' 
+    
+    # Specifies where to go after a successful login (lazy loading)
+    next_page = reverse_lazy('relationship_app:book-list')
 
-class LibraryDetailView(DetailView):
-    """
-    Class-based view (DetailView) to show details for a specific library.
-    Automatically looks for a template named 'relationship_app/library_detail.html'
-    """
-   
-    model = Library
-    
-   
-    template_name = 'relationship_app/library_detail.html'
-    
-  
-    context_object_name = 'library' 
-    
-    
-    def get_queryset(self):
-       
-        return Library.objects.all().prefetch_related('books__author')
 
-    
+# --- 3. Logout View (Class-Based - using Django's built-in) ---
+class CustomLogoutView(LogoutView):
+    """Custom LogoutView to specify the template."""
+    # Specifies the template to display after logout
+    next_page = reverse_lazy('relationship_app:logout') # Redirect to the logout success page itself
+    template_name = 'relationship_app/logout.html'
+
+# (Keep your existing book_list_view and LibraryDetailView here)
+# ...
