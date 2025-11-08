@@ -37,4 +37,11 @@ urlpatterns = [
     
     # Member Access
     path('member-page/', views.member_view, name='member-page'),
+    path('book/add/', views.add_book, name='book-add'),
+    
+    # Edit Book (Requires 'can_change_book')
+    path('book/edit/<int:pk>/', views.edit_book, name='book-edit'),
+    
+    # Delete Book (Requires 'can_delete_book')
+    path('book/delete/<int:pk>/', views.delete_book, name='book-delete'),
 ]

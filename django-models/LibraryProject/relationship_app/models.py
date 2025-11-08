@@ -71,3 +71,23 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     # Ensure profile is created if not already present (e.g., for existing users via admin shell)
     if hasattr(instance, 'userprofile'):
         instance.userprofile.save()
+
+class Book(models.Model):
+    title = models.CharField(max_length=200)
+    # The author field is a ForeignKey, linking each Book to one Author.
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
+
+    def __str__(self):
+        return f"{self.title} by {self.author.name}"
+    
+    # --- Custom Permissions Implementation ---
+    class Meta:
+        permissions = [
+            # ('permission_codename', 'Human-readable permission name')
+            ("can_add_book", "Can add new books to the catalog"),
+            ("can_change_book", "Can edit existing book details"),
+            ("can_delete_book", "Can delete books from the catalog"),
+        ]
+
+# (Keep existing Library, Librarian, and UserProfile models here)
+# ...
