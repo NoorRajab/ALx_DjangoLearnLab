@@ -48,7 +48,8 @@ def run_queries():
     
     # Define variables for query parameters
     author_name = "J.R.R. Tolkien"
-    library_name_central = "Central City Library"
+    # Define the variable that will be used in Library.objects.get(name=library_name)
+    library_name = "Central City Library"
     library_name_west = "West Side Branch"
     
     # 1. Query all books by a specific author (ForeignKey relationship)
@@ -63,21 +64,21 @@ def run_queries():
     print("-" * 30)
     
     # 2. List all books in a library (ManyToManyField relationship)
-    print(f"### 2. List all books in a library ({library_name_central}):")
+    print(f"### 2. List all books in a library ({library_name}):")
     try:
-        # **CORRECTED LINE: Using variable library_name_central**
-        library = Library.objects.get(name=library_name_central)
+        # CORRECTED LINE: Using variable library_name
+        library = Library.objects.get(name=library_name)
         books_in_library = library.books.all()
         for book in books_in_library:
             print(f"- {book.title}")
     except Library.DoesNotExist:
-        print(f"Library '{library_name_central}' not found.")
+        print(f"Library '{library_name}' not found.")
     print("-" * 30)
 
     # 3. Retrieve the librarian for a library (OneToOneField relationship)
     print(f"### 3. Retrieve the librarian for a library ({library_name_west}):")
     try:
-        # **CORRECTED LINE: Using variable library_name_west**
+        # Using a similar variable for consistency
         library = Library.objects.get(name=library_name_west)
         librarian = library.librarian
         print(f"- The librarian is: {librarian.name}")
