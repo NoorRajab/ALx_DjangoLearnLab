@@ -3,6 +3,7 @@ from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView # NEW: Import built-in generic views directly
 from . import views
 
+
 # Previous corrections retained: Explicitly importing the function and class views
 from .views import list_books, LibraryDetailView, register_view 
 
@@ -28,4 +29,12 @@ urlpatterns = [
     # Note: next_page is often used here but not explicitly requested, 
     # so we rely on the default or settings.LOGOUT_REDIRECT_URL.
     path('logout/', LogoutView.as_view(template_name='relationship_app/logout.html'), name='logout'),
+    # Admin Access
+    path('admin-dashboard/', views.admin_view, name='admin-dashboard'),
+    
+    # Librarian Access
+    path('librarian-panel/', views.librarian_view, name='librarian-panel'),
+    
+    # Member Access
+    path('member-page/', views.member_view, name='member-page'),
 ]
