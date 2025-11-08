@@ -21,8 +21,8 @@ def setup_data():
     author1 = Author.objects.create(name="J.R.R. Tolkien")
     author2 = Author.objects.create(name="Jane Austen")
     
-    book1 = Book.objects.create(title="The Hobbit", author=author1)
-    book2 = Book.objects.create(title="The Lord of the Rings", author=author1)
+    Book.objects.create(title="The Hobbit", author=author1)
+    Book.objects.create(title="The Lord of the Rings", author=author1)
     book3 = Book.objects.create(title="Pride and Prejudice", author=author2)
     book4 = Book.objects.create(title="Emma", author=author2)
 
@@ -30,8 +30,8 @@ def setup_data():
     library_a = Library.objects.create(name="Central City Library")
     library_b = Library.objects.create(name="West Side Branch")
     
-    # Add books to Library A
-    library_a.books.add(book1, book2, book3)
+    # Add books to Library A (using primary keys for books)
+    library_a.books.add(Book.objects.get(title="The Hobbit"), Book.objects.get(title="The Lord of the Rings"), book3)
     # Add a subset of books to Library B
     library_b.books.add(book3, book4)
 
@@ -48,7 +48,7 @@ def run_queries():
     
     # Define variables for query parameters
     author_name = "J.R.R. Tolkien"
-    # Define the variable that will be used in Library.objects.get(name=library_name)
+    # Previous correction retained: using variable library_name
     library_name = "Central City Library"
     library_name_west = "West Side Branch"
     
@@ -56,7 +56,11 @@ def run_queries():
     print(f"### 1. Query all books by a specific author ({author_name}):")
     try:
         author = Author.objects.get(name=author_name)
-        books_by_author = author.books.all()
+        
+        # CORRECTED LINE: Using Book.objects.filter(author=author)
+        # Filters the Book model based on the Author object
+        books_by_author = Book.objects.filter(author=author)
+        
         for book in books_by_author:
             print(f"- {book.title}")
     except Author.DoesNotExist:
@@ -66,7 +70,7 @@ def run_queries():
     # 2. List all books in a library (ManyToManyField relationship)
     print(f"### 2. List all books in a library ({library_name}):")
     try:
-        # CORRECTED LINE: Using variable library_name
+        # Previous correction retained: using variable library_name
         library = Library.objects.get(name=library_name)
         books_in_library = library.books.all()
         for book in books_in_library:
@@ -78,7 +82,6 @@ def run_queries():
     # 3. Retrieve the librarian for a library (OneToOneField relationship)
     print(f"### 3. Retrieve the librarian for a library ({library_name_west}):")
     try:
-        # Using a similar variable for consistency
         library = Library.objects.get(name=library_name_west)
         librarian = library.librarian
         print(f"- The librarian is: {librarian.name}")
