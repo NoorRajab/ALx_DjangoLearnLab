@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.forms import UserCreationForm 
 from django.contrib.auth import login
 from django.forms import modelform_factory
-from .models import Book, Library, UserProfile, Author 
+from .models import Library,Book, UserProfile, Author 
 
 
 def list_books(request):
