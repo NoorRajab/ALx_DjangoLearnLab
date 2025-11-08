@@ -24,7 +24,7 @@ def setup_data():
 
     library_a = Library.objects.create(name="Central City Library")
     library_b = Library.objects.create(name="West Side Branch")
-
+    
     library_a.books.add(book1, book2, book3)
     library_b.books.add(book3, book4)
 
@@ -38,33 +38,37 @@ def setup_data():
 def run_queries():
     """Executes the required queries."""
 
-    print("### 1. Query all books by a specific author (J.R.R. Tolkien):")
+    author_name = "J.R.R. Tolkien"
+    library_name_central = "Central City Library"
+    library_name_west = "West Side Branch"
+    
+    print(f"### 1. Query all books by a specific author ({author_name}):")
     try:
-        author = Author.objects.get(name="J.R.R. Tolkien")
+        author = Author.objects.get(name=author_name)
         books_by_author = author.books.all()
         for book in books_by_author:
             print(f"- {book.title}")
     except Author.DoesNotExist:
-        print("Author not found.")
+        print(f"Author '{author_name}' not found.")
     print("-" * 30)
-    
-    print("### 2. List all books in a library (Central City Library):")
+    print(f"### 2. List all books in a library ({library_name_central}):")
     try:
-        library = Library.objects.get(name="Central City Library")
+        
+        library = Library.objects.get(name=library_name_central)
         books_in_library = library.books.all()
         for book in books_in_library:
             print(f"- {book.title}")
     except Library.DoesNotExist:
-        print("Library not found.")
+        print(f"Library '{library_name_central}' not found.")
     print("-" * 30)
 
-    print("### 3. Retrieve the librarian for a library (West Side Branch):")
+    print(f"### 3. Retrieve the librarian for a library ({library_name_west}):")
     try:
-        library = Library.objects.get(name="West Side Branch")
+        library = Library.objects.get(name=library_name_west)
         librarian = library.librarian
         print(f"- The librarian is: {librarian.name}")
     except Library.DoesNotExist:
-        print("Library not found.")
+        print(f"Library '{library_name_west}' not found.")
     except Librarian.DoesNotExist:
         print("Librarian not found for this library.")
     print("-" * 30)
