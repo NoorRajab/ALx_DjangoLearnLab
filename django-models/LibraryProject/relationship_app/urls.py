@@ -1,16 +1,16 @@
 # relationship_app/urls.py
 from django.urls import path
 from . import views
-# CORRECTION APPLIED: Explicitly importing the function-based view
-from .views import book_list_view, LibraryDetailView # Combined imports for clarity
+# CORRECTED: Importing the renamed function 'list_books'
+from .views import list_books, LibraryDetailView 
 
-# Define the app namespace (useful for {% url 'relationship_app:...' %} template tags)
+# Define the app namespace
 app_name = 'relationship_app'
 
 urlpatterns = [
     # 1. Route for Function-based View (Book List)
-    # Using the explicitly imported view function
-    path('books/', book_list_view, name='book-list'),
+    # CORRECTED: Referencing the renamed function 'list_books'
+    path('books/', list_books, name='book-list'), 
     
     # 2. Route for Class-based View (Library Detail)
     path('library/<int:pk>/', LibraryDetailView.as_view(), name='library-detail'),

@@ -1,12 +1,11 @@
 # relationship_app/views.py
 from django.shortcuts import render
-# CORRECTION APPLIED: Importing DetailView from the specific detail module
-from django.views.generic.detail import DetailView
+from django.views.generic.detail import DetailView # Previous correction retained
 from .models import Library, Book
 
 # --- 1. Implement Function-based View ---
 
-def book_list_view(request):
+def list_books(request): # CORRECTED: Changed name from book_list_view to list_books
     """
     Function-based view to list all books.
     Queries all books and renders the list_books.html template.
@@ -26,18 +25,13 @@ def book_list_view(request):
 class LibraryDetailView(DetailView):
     """
     Class-based view (DetailView) to show details for a specific library.
-    This view automatically handles fetching a single object based on the URL's primary key (pk).
     """
-    # Specify the model to work with
     model = Library
-    
-    # Specify the template name
     template_name = 'relationship_app/library_detail.html'
-    
-    # Specify the context object name (accessible in the template as 'library')
     context_object_name = 'library' 
     
-    # Optional: Override get_queryset for query optimization
     def get_queryset(self):
-        # Prefetch the related books and their authors to minimize database hits (N+1 problem)
         return Library.objects.all().prefetch_related('books__author')
+
+# (Authentication and RBAC views would follow here, with their names remaining unchanged)
+# ...
