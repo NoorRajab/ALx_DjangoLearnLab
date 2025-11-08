@@ -1,6 +1,7 @@
 # relationship_app/views.py
 from django.shortcuts import render
-from django.views.generic import DetailView
+# CORRECTION APPLIED: Importing DetailView from the specific detail module
+from django.views.generic.detail import DetailView
 from .models import Library, Book
 
 # --- 1. Implement Function-based View ---
@@ -19,7 +20,6 @@ def book_list_view(request):
     
     # Render the template
     return render(request, 'relationship_app/list_books.html', context)
-# 
 
 # --- 2. Implement Class-based View (DetailView) ---
 
@@ -31,7 +31,7 @@ class LibraryDetailView(DetailView):
     # Specify the model to work with
     model = Library
     
-    # Specify the template name, which will be searched inside the 'relationship_app/templates/relationship_app/' folder
+    # Specify the template name
     template_name = 'relationship_app/library_detail.html'
     
     # Specify the context object name (accessible in the template as 'library')
