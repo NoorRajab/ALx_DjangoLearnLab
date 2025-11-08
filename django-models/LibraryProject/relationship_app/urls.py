@@ -1,47 +1,37 @@
 # relationship_app/urls.py
 from django.urls import path
-from django.contrib.auth.views import LoginView, LogoutView # NEW: Import built-in generic views directly
+from django.contrib.auth.views import LoginView, LogoutView 
 from . import views
 
-
-# Previous corrections retained: Explicitly importing the function and class views
+# Previous corrections retained: Explicitly importing core app views
 from .views import list_books, LibraryDetailView, register_view 
+
+# CORRECTION APPLIED: Explicitly importing all book management views
+from .views import admin_view, librarian_view, member_view, add_book, edit_book, delete_book
 
 app_name = 'relationship_app'
 
 urlpatterns = [
-    # Existing General Views
+    # Existing General/Auth Views
     path('books/', list_books, name='book-list'),
     path('library/<int:pk>/', LibraryDetailView.as_view(), name='library-detail'),
-    
-    # --- New Authentication Views (Corrected to use requested syntax) ---
-    
-    # 1. Registration
-    # CORRECTED: Using 'views.register_view' via the imported 'views' namespace
     path('register/', views.register_view, name='register'),
-    
-    # 2. Login
-    # CORRECTED: Using LoginView.as_view() with template_name specified
     path('login/', LoginView.as_view(template_name='relationship_app/login.html'), name='login'),
-    
-    # 3. Logout
-    # CORRECTED: Using LogoutView.as_view() with template_name specified
-    # Note: next_page is often used here but not explicitly requested, 
-    # so we rely on the default or settings.LOGOUT_REDIRECT_URL.
     path('logout/', LogoutView.as_view(template_name='relationship_app/logout.html'), name='logout'),
-    # Admin Access
+    
+    # Existing RBAC Views
     path('admin-dashboard/', views.admin_view, name='admin-dashboard'),
-    
-    # Librarian Access
     path('librarian-panel/', views.librarian_view, name='librarian-panel'),
-    
-    # Member Access
     path('member-page/', views.member_view, name='member-page'),
-    path('book/add/', views.add_book, name='book-add'),
+
+    # --- Secured Book Management URLs (Corrected to use explicit imports) ---
+    
+    # Add Book (Requires 'can_add_book')
+    path('book/add/', add_book, name='book-add'), # Using explicitly imported view
     
     # Edit Book (Requires 'can_change_book')
-    path('book/edit/<int:pk>/', views.edit_book, name='book-edit'),
+    path('book/edit/<int:pk>/', edit_book, name='book-edit'), # Using explicitly imported view
     
     # Delete Book (Requires 'can_delete_book')
-    path('book/delete/<int:pk>/', views.delete_book, name='book-delete'),
+    path('book/delete/<int:pk>/', delete_book, name='book-delete'), # Using explicitly imported view
 ]
