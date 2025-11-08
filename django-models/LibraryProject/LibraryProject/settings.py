@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bookshelf',
+    'relationship_app',
 ]
 
 MIDDLEWARE = [
@@ -116,8 +117,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-LOGIN_REDIRECT_URL = '/relationship/books/' # Use the path to your book-list view
-LOGOUT_REDIRECT_URL = '/relationship/login/' # Optional: Where to redirect after logout
+# Where to redirect after successful login
+LOGIN_REDIRECT_URL = '/relationship/books/' 
+# Where to redirect if a user tries to access a protected page without logging in
+LOGIN_URL = '/relationship/login/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
