@@ -1,25 +1,31 @@
 # relationship_app/urls.py
 from django.urls import path
+from django.contrib.auth.views import LoginView, LogoutView # NEW: Import built-in generic views directly
 from . import views
-# CORRECTED: Importing the renamed function 'list_books'
-from .views import list_books, LibraryDetailView 
-from .views import register_view, CustomLoginView, CustomLogoutView
-# Define the app namespace
+
+# Previous corrections retained: Explicitly importing the function and class views
+from .views import list_books, LibraryDetailView, register_view 
+
 app_name = 'relationship_app'
 
 urlpatterns = [
-    # 1. Route for Function-based View (Book List)
-    # CORRECTED: Referencing the renamed function 'list_books'
-    path('books/', list_books, name='book-list'), 
-    
-    # 2. Route for Class-based View (Library Detail)
+    # Existing General Views
+    path('books/', list_books, name='book-list'),
     path('library/<int:pk>/', LibraryDetailView.as_view(), name='library-detail'),
+    
+    # --- New Authentication Views (Corrected to use requested syntax) ---
+    
     # 1. Registration
-    path('register/', register_view, name='register'),
+    # CORRECTED: Using 'views.register_view' via the imported 'views' namespace
+    path('register/', views.register_view, name='register'),
     
     # 2. Login
-    path('login/', CustomLoginView.as_view(), name='login'),
+    # CORRECTED: Using LoginView.as_view() with template_name specified
+    path('login/', LoginView.as_view(template_name='relationship_app/login.html'), name='login'),
     
     # 3. Logout
-    path('logout/', CustomLogoutView.as_view(), name='logout'),
+    # CORRECTED: Using LogoutView.as_view() with template_name specified
+    # Note: next_page is often used here but not explicitly requested, 
+    # so we rely on the default or settings.LOGOUT_REDIRECT_URL.
+    path('logout/', LogoutView.as_view(template_name='relationship_app/logout.html'), name='logout'),
 ]
