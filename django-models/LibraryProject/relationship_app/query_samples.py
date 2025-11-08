@@ -1,0 +1,75 @@
+import os
+import django
+from django.db.models import Count
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_models.settings')
+django.setup()
+
+from relationship_app.models import Author, Book, Library, Librarian
+
+def setup_data():
+    """Populates the database with sample data."""
+    print("--- Setting up sample data ---")
+
+    Author.objects.all().delete()
+    Library.objects.all().delete()
+    
+    author1 = Author.objects.create(name="J.R.R. Tolkien")
+    author2 = Author.objects.create(name="Jane Austen")
+    
+    book1 = Book.objects.create(title="The Hobbit", author=author1)
+    book2 = Book.objects.create(title="The Lord of the Rings", author=author1)
+    book3 = Book.objects.create(title="Pride and Prejudice", author=author2)
+    book4 = Book.objects.create(title="Emma", author=author2)
+
+    library_a = Library.objects.create(name="Central City Library")
+    library_b = Library.objects.create(name="West Side Branch")
+
+    library_a.books.add(book1, book2, book3)
+    library_b.books.add(book3, book4)
+
+    Librarian.objects.create(name="Alice Smith", library=library_a)
+    Librarian.objects.create(name="Bob Johnson", library=library_b)
+    
+    print("Sample data populated successfully!")
+    print("-" * 30)
+
+
+def run_queries():
+    """Executes the required queries."""
+
+    print("### 1. Query all books by a specific author (J.R.R. Tolkien):")
+    try:
+        author = Author.objects.get(name="J.R.R. Tolkien")
+        books_by_author = author.books.all()
+        for book in books_by_author:
+            print(f"- {book.title}")
+    except Author.DoesNotExist:
+        print("Author not found.")
+    print("-" * 30)
+    
+    print("### 2. List all books in a library (Central City Library):")
+    try:
+        library = Library.objects.get(name="Central City Library")
+        books_in_library = library.books.all()
+        for book in books_in_library:
+            print(f"- {book.title}")
+    except Library.DoesNotExist:
+        print("Library not found.")
+    print("-" * 30)
+
+    print("### 3. Retrieve the librarian for a library (West Side Branch):")
+    try:
+        library = Library.objects.get(name="West Side Branch")
+        librarian = library.librarian
+        print(f"- The librarian is: {librarian.name}")
+    except Library.DoesNotExist:
+        print("Library not found.")
+    except Librarian.DoesNotExist:
+        print("Librarian not found for this library.")
+    print("-" * 30)
+
+
+if __name__ == '__main__':
+    setup_data()
+    run_queries()
