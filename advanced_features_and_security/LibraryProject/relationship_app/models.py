@@ -1,87 +1,85 @@
-
-
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils.translation import gettext_lazy as _
+from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-class CustomUserManager(BaseUserManager):
-    """
-    Custom user model manager where email is the unique identifier
-    for authentication instead of usernames.
-    """
-    def create_user(self, email, password, **extra_fields):
-        """
-        Create and save a User with the given email and password.
-        """
-        if not email:
-            raise ValueError(_('The Email must be set'))
-        email = self.normalize_email(email)
-        
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, password, **extra_fields):
-        """
-        Create and save a SuperUser with the given email and password.
-        """
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Superuser must have is_staff=True.'))
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Superuser must have is_superuser=True.'))
-            
-        return self.create_user(email, password, **extra_fields)
-
-class CustomUser(AbstractUser):
-   
-    username = None 
-    email = models.EmailField(_('email address'), unique=True)
-    
-
-    date_of_birth = models.DateField(
-        _('date of birth'),
-        null=True, 
-        blank=True
-    )
-    profile_photo = models.ImageField(
-        _('profile photo'),
-        upload_to='profile_photos/', 
-        null=True, 
-        blank=True
-    )
-    
-   
-    USERNAME_FIELD = 'email'
-   
-    REQUIRED_FIELDS = [] 
-
-    objects = CustomUserManager()
-
-    def __str__(self):
-        return self.email
-
-
-class Library(models.Model):
+class Author(models.Model):
     name = models.CharField(max_length=100)
-    books = models.ManyToManyField('Book', related_name='libraries')
 
     def __str__(self):
         return self.name
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
-    author = models.ForeignKey('Author', on_delete=models.CASCADE, related_name='books')
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
+
+    def __str__(self):
+        return f"{self.title} by {self.author.name}"
+
+class Library(models.Model):
+    name = models.CharField(max_length=100)
+    books = models.ManyToManyField(Book, related_name='libraries')
+
+    def __str__(self):
+        return self.name
+
+class Librarian(models.Model):
+    name = models.CharField(max_length=100)
+    library = models.OneToOneField(Library, on_delete=models.CASCADE, primary_key=True)
+
+    def __str__(self):
+        return f"Librarian {self.name} at {self.library.name}"
+
+class UserProfile(models.Model):
+  
+    ADMIN = 'Admin'
+    LIBRARIAN = 'Librarian' 
+    MEMBER = 'Member'       
+    
+    ROLE_CHOICES = [
+        (ADMIN, 'Admin'),
+        (LIBRARIAN, 'Librarian'),
+        (MEMBER, 'Member'),
+    ]
+    
+   
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    
+    
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default=MEMBER,
+    )
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role})"
+
+
+
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    
+    if created:
+        
+        UserProfile.objects.create(user=instance)
+    
+    if hasattr(instance, 'userprofile'):
+        instance.userprofile.save()
+
+class Book(models.Model):
+    title = models.CharField(max_length=200)
+    
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
 
     def __str__(self):
         return f"{self.title} by {self.author.name}"
     
+    
     class Meta:
         permissions = [
+            
             ("can_add_book", "Can add new books to the catalog"),
             ("can_change_book", "Can edit existing book details"),
             ("can_delete_book", "Can delete books from the catalog"),
