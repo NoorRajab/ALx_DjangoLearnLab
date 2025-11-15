@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>🔒 Admin Dashboard 🔑</h1>
+    <p>{{ message }}</p>
+    {% if user.is_authenticated %}
+    <p>Logged in as: <strong>{{ user.username }}</strong> (Role: {{ user.userprofile.role }})</p>
+    {% endif %}
+    <hr>
+    <h3>Admin-Only Actions:</h3>
+    <ul>
+        <li><a href="#">Manage All Users and Permissions</a></li>
+        <li><a href="#">System Configuration</a></li>
+    </ul>
+    <p><a href="{% url 'relationship_app:logout' %}">Logout</a></p>
+</body>
+</html>

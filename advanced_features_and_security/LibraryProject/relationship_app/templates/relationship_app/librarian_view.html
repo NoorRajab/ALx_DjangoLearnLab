@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Librarian Panel</title>
+</head>
+<body>
+    <h1>📚 Librarian Panel 📋</h1>
+    <p>{{ message }}</p>
+    {% if user.is_authenticated %}
+    <p>Logged in as: <strong>{{ user.username }}</strong> (Role: {{ user.userprofile.role }})</p>
+    {% endif %}
+    <hr>
+    <h3>All Books in Catalog:</h3>
+    <ul>
+        {% for book in books %}
+        <li>{{ book.title }} by {{ book.author.name }}</li>
+        {% endfor %}
+    </ul>
+    <p><a href="{% url 'relationship_app:logout' %}">Logout</a></p>
+</body>
+</html>
