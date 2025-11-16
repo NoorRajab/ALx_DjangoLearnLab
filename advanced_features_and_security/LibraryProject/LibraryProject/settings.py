@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%&au^!_fm9ds3r=g#xpj+kqz&+8fawjmh*i*k&s9l%dn%fbn3b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -42,6 +42,23 @@ INSTALLED_APPS = [
 ]
 AUTH_USER_MODEL = 'bookshelf.CustomUser'
 
+# 4. HTTPS-Only Cookies (Crucial for production)
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+# Use HttpOnly flag to prevent client-side JavaScript access to session cookie
+SESSION_COOKIE_HTTPONLY = True 
+CSRF_COOKIE_HTTPONLY = True
+
+# 5. XSS/Clickjacking Prevention Headers
+X_FRAME_OPTIONS = 'DENY' # Prevents Clickjacking by blocking embedding in an iframe
+SECURE_BROWSER_XSS_FILTER = True # Recommended, though modern browsers use XSS auditors
+SECURE_CONTENT_TYPE_NOSNIFF = True # Prevents browsers from guessing the content type (MIME sniffing)
+
+# 6. HSTS (HTTP Strict Transport Security) - Enforces HTTPS after first visit
+# SECURE_HSTS_SECONDS = 31536000 # 1 year
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -50,7 +67,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CspMiddleware'
 ]
+
+CSP_DEFAULT_SRC = ("'self'",) # Default policy is 'self' (only content from your domain)
+CSP_SCRIPT_SRC = ("'self'", "https://trustedcdn.com") # Only allow scripts from your domain and trusted CDNs
+CSP_STYLE_SRC = ("'self'", "https://trustedcdn.com") # Only allow styles from your domain and trusted CDNs
+CSP_IMG_SRC = ("'self'", "data:") # Allows images from your domain and inline base64 images
+CSP_FRAME_ANCESTORS = ("'self'",) # Stronger defense than X_FRAME_OPTIONS for frames
 
 ROOT_URLCONF = 'LibraryProject.urls'
 
