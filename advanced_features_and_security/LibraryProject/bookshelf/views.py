@@ -1,27 +1,39 @@
-# library_catalog/views.py
+# users/views.py (New File)
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseForbidden
-from .models import Book
-from .forms import BookForm # Assume you have a simple BookForm defined
+from .models import Book 
+from .forms import BookForm # Assume a BookForm exists for handling form submission
 
-# The application name is used in the permission string: 'app_name.permission_codename'
+# The application name is 'users' based on where the models file is located.
 
 @login_required 
-@permission_required('library_catalog.can_view', raise_exception=True)
+@permission_required('users.can_view', raise_exception=True)
 def book_list_view(request):
     """
-    Allows users with 'can_view' permission to see the book list.
+    Displays the list of books. Requires 'can_view' permission.
     """
     books = Book.objects.all()
-    return render(request, 'library_catalog/book_list.html', {'books': books})
+    # Check for additional permissions to control what is displayed in the template (optional best practice)
+    can_create = request.user.has_perm('users.can_create')
+    can_edit = request.user.has_perm('users.can_edit')
+    can_delete = request.user.has_perm('users.can_delete')
+    
+    context = {
+        'books': books,
+        'can_create': can_create,
+        'can_edit': can_edit,
+        'can_delete': can_delete
+    }
+    return render(request, 'users/book_list.html', context)
+
 
 @login_required
-@permission_required('library_catalog.can_create', raise_exception=True)
+@permission_required('users.can_create', raise_exception=True)
 def book_create_view(request):
     """
-    Allows users with 'can_create' permission to add a new book.
+    Handles adding a new book. Requires 'can_create' permission.
     """
     if request.method == 'POST':
         form = BookForm(request.POST)
@@ -30,13 +42,14 @@ def book_create_view(request):
             return redirect('book_list')
     else:
         form = BookForm()
-    return render(request, 'library_catalog/book_form.html', {'form': form, 'action': 'Create'})
+    return render(request, 'users/book_form.html', {'form': form, 'action': 'Create'})
+
 
 @login_required
-@permission_required('library_catalog.can_edit', raise_exception=True)
+@permission_required('users.can_edit', raise_exception=True)
 def book_edit_view(request, pk):
     """
-    Allows users with 'can_edit' permission to modify an existing book.
+    Handles modifying an existing book. Requires 'can_edit' permission.
     """
     book = get_object_or_404(Book, pk=pk)
     if request.method == 'POST':
@@ -46,17 +59,17 @@ def book_edit_view(request, pk):
             return redirect('book_list')
     else:
         form = BookForm(instance=book)
-    return render(request, 'library_catalog/book_form.html', {'form': form, 'book': book, 'action': 'Edit'})
+    return render(request, 'users/book_form.html', {'form': form, 'book': book, 'action': 'Edit'})
+
 
 @login_required
-@permission_required('library_catalog.can_delete', raise_exception=True)
+@permission_required('users.can_delete', raise_exception=True)
 def book_delete_view(request, pk):
     """
-    Allows users with 'can_delete' permission to remove a book.
+    Handles deleting a book. Requires 'can_delete' permission.
     """
     book = get_object_or_404(Book, pk=pk)
     if request.method == 'POST':
         book.delete()
         return redirect('book_list')
-    # Use a simple confirmation page template
-    return render(request, 'library_catalog/book_confirm_delete.html', {'book': book})
+    return render(request, 'users/book_confirm_delete.html', {'book': book})

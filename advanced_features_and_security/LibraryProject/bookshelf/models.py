@@ -84,3 +84,13 @@ class Book(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.author}"
+# --- Custom Permissions Definition (Step 1) ---
+class Meta:
+    permissions = [
+         # Permission: (codename, descriptive name)
+        ("can_view", "Can view all books in the catalog"),
+        ("can_create", "Can add new books to the catalog"),
+        ("can_edit", "Can modify existing book details"),
+        ("can_delete", "Can remove books from the catalog"),
+        ]
+
