@@ -6,7 +6,7 @@ from django.http import HttpResponseForbidden
 from django.db.models import Q # Used for secure search demonstration
 from .models import Book 
 # IMPORTANT: Updated import to include ExampleForm
-from .forms import BookForm, ExampleForm 
+from .forms import ExampleForm, BookForm
 
 
 # The application name is assumed to be 'bookshelf' for permission checks

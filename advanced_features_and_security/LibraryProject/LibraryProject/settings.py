@@ -53,6 +53,19 @@ CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY' # Prevents Clickjacking by blocking embedding in an iframe
 SECURE_BROWSER_XSS_FILTER = True # Recommended, though modern browsers use XSS auditors
 SECURE_CONTENT_TYPE_NOSNIFF = True # Prevents browsers from guessing the content type (MIME sniffing)
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_REFERRER_POLICY = 'same-origin'
+
+# Optional: Set a secure default for the 'samesite' attribute on cookies.
+# A good default is 'Lax' to mitigate CSRF attacks.
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Allows domain to be submitted to the HSTS preload list.
+# Requires the base domain and all subdomains to be HTTPS-only.
+SECURE_HSTS_PRELOAD = True
 
 # 6. HSTS (HTTP Strict Transport Security) - Enforces HTTPS after first visit
 # SECURE_HSTS_SECONDS = 31536000 # 1 year
