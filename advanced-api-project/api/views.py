@@ -1,76 +1,45 @@
 # api/views.py
-from rest_framework import generics, permissions, mixins
+from rest_framework import generics, permissions
+from rest_framework import filters  # Import the filters module
+from django_filters.rest_framework import DjangoFilterBackend # Import the DjangoFilterBackend
+
 from .models import Book
 from .serializers import BookSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from .filters import BookFilter # Import the custom filterset
 
-# Base class providing queryset and serializer context
-class BookBaseView(generics.GenericAPIView):
-    """Base class for Book operations, defining common settings."""
+class BookListCreate(generics.ListCreateAPIView):
+    """
+    ListCreateAPIView with Filtering, Searching, and Ordering enabled.
+    """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    # Apply permissions to the base class: Read-Only for anyone, Write for authenticated.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    # Define the filter backends to be used in this view
+    filter_backends = [
+        DjangoFilterBackend,       # Step 1: Enables comprehensive filtering
+        filters.SearchFilter,      # Step 2: Enables text search
+        filters.OrderingFilter,    # Step 3: Enables field ordering
+    ]
+    
+    # Filtering Configuration (Step 1)
+    # Use the custom FilterSet for advanced filtering logic
+    filterset_class = BookFilter 
+
+    # Search Configuration (Step 2)
+    # Fields to search across (case-insensitive text search)
+    search_fields = ['title', 'author__name'] # Search across Book title and the linked Author's name
+    
+    # Ordering Configuration (Step 3)
+    # Fields available for ordering
+    ordering_fields = ['title', 'publication_year', 'id']
+    # Default ordering (e.g., by ID ascending)
+    ordering = ['id'] 
 
 
-# --- 1. ListView (GET list) ---
-class BookListView(mixins.ListModelMixin, BookBaseView):
-    """
-    Handles GET request to list all Book instances.
-    Equivalent to a traditional ListView.
-    """
-    def get(self, request, *args, **kwargs):
-        # Calls the ListModelMixin's list() method
-        return self.list(request, *args, **kwargs)
-
-
-# --- 2. DetailView (GET retrieve) ---
-class BookDetailView(mixins.RetrieveModelMixin, BookBaseView):
-    """
-    Handles GET request to retrieve a single Book instance by PK.
-    Equivalent to a traditional DetailView.
-    """
-    def get(self, request, *args, **kwargs):
-        # Calls the RetrieveModelMixin's retrieve() method
-        return self.retrieve(request, *args, **kwargs)
-
-
-# --- 3. CreateView (POST create) ---
-class BookCreateView(mixins.CreateModelMixin, BookBaseView):
-    """
-    Handles POST request to create a new Book instance.
-    Equivalent to a traditional CreateView.
-    """
-    # Customization Hook (Step 3): Permissions enforced via permission_classes on base view.
-    # The CreateModelMixin handles validation via serializer_class automatically.
-    def post(self, request, *args, **kwargs):
-        # Calls the CreateModelMixin's create() method
-        return self.create(request, *args, **kwargs)
-
-
-# --- 4. UpdateView (PUT/PATCH update) ---
-class BookUpdateView(mixins.UpdateModelMixin, BookBaseView):
-    """
-    Handles PUT/PATCH requests to update an existing Book instance by PK.
-    Equivalent to a traditional UpdateView.
-    """
-    # Customization Hook (Step 3): Permissions enforced via permission_classes on base view.
-    def put(self, request, *args, **kwargs):
-        # Calls the UpdateModelMixin's update() method
-        return self.update(request, *args, **kwargs)
-
-    def patch(self, request, *args, **kwargs):
-        # Calls the UpdateModelMixin's partial_update() method
-        return self.partial_update(request, *args, **kwargs)
-
-
-# --- 5. DeleteView (DELETE destroy) ---
-class BookDeleteView(mixins.DestroyModelMixin, BookBaseView):
-    """
-    Handles DELETE request to destroy an existing Book instance by PK.
-    Equivalent to a traditional DeleteView.
-    """
-    # Permissions (Step 4): Permissions enforced via permission_classes on base view.
-    def delete(self, request, *args, **kwargs):
-        # Calls the DestroyModelMixin's destroy() method
-        return self.destroy(request, *args, **kwargs)
+# BookDetailUpdateDelete remains unchanged as these features only apply to list views.
+class BookDetailUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
+    # ... (code for BookDetailUpdateDelete remains the same)
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
