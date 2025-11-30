@@ -1,66 +1,51 @@
-
+# api/views.py
 from rest_framework import generics, permissions
 from .models import Book
 from .serializers import BookSerializer
 
-# --- View Configurations ---
-
 class BookListCreate(generics.ListCreateAPIView):
     """
-    ListCreateAPIView combines the ListModelMixin and CreateModelMixin.
+    ListCreateAPIView combines:
+    1. ListView (via ListModelMixin): Handles GET request to retrieve a list of books.
+    2. CreateView (via CreateModelMixin): Handles POST request to create a new book.
 
-    Objective:
-    - GET: List all books (List View).
-    - POST: Create a new book (Create View).
-
-    Permissions:
-    - Read (GET) is allowed for everyone (AllowAny).
-    - Write (POST) is restricted to authenticated users (IsAuthenticatedOrReadOnly).
+    Permissions (Step 4):
+    - permissions.IsAuthenticatedOrReadOnly: Allows unauthenticated users READ access (GET),
+      but restricts WRITE access (POST) to authenticated users only.
     """
+    # Required for List/Retrieve operations
     queryset = Book.objects.all()
+    # Required for Serialization/Validation
     serializer_class = BookSerializer
-    
-    # Custom Permissions: Allow read access to anyone, but only authenticated users can create.
-    # Note: DRF checks permissions sequentially. IsAuthenticatedOrReadOnly grants read access to all,
-    # but only write access to authenticated users.
+    # Permission check implementation
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
-    # Customization Hook: 
-    # Overriding perform_create to automatically set the author field based on the request user
-    # (although our model links Book to Author, not User, this is a common customization pattern).
-    # For simplicity, we'll ensure the serializer is ready to handle this foreign key.
-    # (The BookSerializer was already set to read_only_fields = ['author'], 
-    # so we'd need to adjust that for a real-world auto-assignment, but for this task, 
-    # we'll keep the required fields simple and rely on the frontend to supply the 'author' ID.)
-
-    # A customization to show only books published in a certain year, for example:
-    # def get_queryset(self):
-    #     year = self.request.query_params.get('year', None)
-    #     if year is not None:
-    #         return Book.objects.filter(publication_year=year)
-    #     return Book.objects.all()
+    # Customization Hook Example (Step 3):
+    # This ensures any custom validation (like publication_year check in the serializer)
+    # is executed during creation. The ListCreateAPIView handles this automatically,
+    # but this is where further custom logic could be added, e.g., setting the author
+    # based on the request user, if the models were set up for it.
 
 
 class BookDetailUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
     """
-    RetrieveUpdateDestroyAPIView combines RetrieveModelMixin, UpdateModelMixin, and DestroyModelMixin.
+    RetrieveUpdateDestroyAPIView combines:
+    1. DetailView (via RetrieveModelMixin): Handles GET request to retrieve a single book.
+    2. UpdateView (via UpdateModelMixin): Handles PUT/PATCH request to update a book.
+    3. DeleteView (via DestroyModelMixin): Handles DELETE request to remove a book.
 
-    Objective:
-    - GET: Retrieve a single book (Detail View).
-    - PUT/PATCH: Update an existing book (Update View).
-    - DELETE: Delete a book (Delete View).
-
-    Permissions:
-    - Read (GET) is allowed for everyone (AllowAny).
-    - Write (PUT/PATCH/DELETE) is restricted to authenticated users (IsAuthenticated).
+    Permissions (Step 4):
+    - permissions.IsAuthenticatedOrReadOnly: Allows unauthenticated users READ access (GET),
+      but restricts WRITE/DELETE access (PUT, PATCH, DELETE) to authenticated users only.
     """
+    # Required for Detail/Update/Delete operations
     queryset = Book.objects.all()
+    # Required for Serialization/Validation
     serializer_class = BookSerializer
-    
-    # Custom Permissions: Allow read access to anyone, but only authenticated users can modify/delete.
+    # Permission check implementation
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
-    # Customization Example:
-    # Ensure update/delete operations are only performed by the book's creator 
-    # (Requires adding a 'user' field to the Book model, not implemented here, 
-    # but the custom permission class would be used here, e.g., permissions.IsOwnerOrReadOnly).
+    # Customization Hook Example (Step 3):
+    # Overriding perform_update or perform_destroy is often done here 
+    # to add logging or enforce business logic before modification/deletion.
+    # The view correctly handles data validation automatically by using the serializer_class.
