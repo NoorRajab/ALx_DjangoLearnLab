@@ -1,51 +1,75 @@
 # api/views.py
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, mixins
 from .models import Book
 from .serializers import BookSerializer
 
-class BookListCreate(generics.ListCreateAPIView):
-    """
-    ListCreateAPIView combines:
-    1. ListView (via ListModelMixin): Handles GET request to retrieve a list of books.
-    2. CreateView (via CreateModelMixin): Handles POST request to create a new book.
-
-    Permissions (Step 4):
-    - permissions.IsAuthenticatedOrReadOnly: Allows unauthenticated users READ access (GET),
-      but restricts WRITE access (POST) to authenticated users only.
-    """
-    # Required for List/Retrieve operations
+# Base class providing queryset and serializer context
+class BookBaseView(generics.GenericAPIView):
+    """Base class for Book operations, defining common settings."""
     queryset = Book.objects.all()
-    # Required for Serialization/Validation
     serializer_class = BookSerializer
-    # Permission check implementation
+    # Apply permissions to the base class: Read-Only for anyone, Write for authenticated.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    
-    # Customization Hook Example (Step 3):
-    # This ensures any custom validation (like publication_year check in the serializer)
-    # is executed during creation. The ListCreateAPIView handles this automatically,
-    # but this is where further custom logic could be added, e.g., setting the author
-    # based on the request user, if the models were set up for it.
 
 
-class BookDetailUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
+# --- 1. ListView (GET list) ---
+class BookListView(mixins.ListModelMixin, BookBaseView):
     """
-    RetrieveUpdateDestroyAPIView combines:
-    1. DetailView (via RetrieveModelMixin): Handles GET request to retrieve a single book.
-    2. UpdateView (via UpdateModelMixin): Handles PUT/PATCH request to update a book.
-    3. DeleteView (via DestroyModelMixin): Handles DELETE request to remove a book.
-
-    Permissions (Step 4):
-    - permissions.IsAuthenticatedOrReadOnly: Allows unauthenticated users READ access (GET),
-      but restricts WRITE/DELETE access (PUT, PATCH, DELETE) to authenticated users only.
+    Handles GET request to list all Book instances.
+    Equivalent to a traditional ListView.
     """
-    # Required for Detail/Update/Delete operations
-    queryset = Book.objects.all()
-    # Required for Serialization/Validation
-    serializer_class = BookSerializer
-    # Permission check implementation
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    
-    # Customization Hook Example (Step 3):
-    # Overriding perform_update or perform_destroy is often done here 
-    # to add logging or enforce business logic before modification/deletion.
-    # The view correctly handles data validation automatically by using the serializer_class.
+    def get(self, request, *args, **kwargs):
+        # Calls the ListModelMixin's list() method
+        return self.list(request, *args, **kwargs)
+
+
+# --- 2. DetailView (GET retrieve) ---
+class BookDetailView(mixins.RetrieveModelMixin, BookBaseView):
+    """
+    Handles GET request to retrieve a single Book instance by PK.
+    Equivalent to a traditional DetailView.
+    """
+    def get(self, request, *args, **kwargs):
+        # Calls the RetrieveModelMixin's retrieve() method
+        return self.retrieve(request, *args, **kwargs)
+
+
+# --- 3. CreateView (POST create) ---
+class BookCreateView(mixins.CreateModelMixin, BookBaseView):
+    """
+    Handles POST request to create a new Book instance.
+    Equivalent to a traditional CreateView.
+    """
+    # Customization Hook (Step 3): Permissions enforced via permission_classes on base view.
+    # The CreateModelMixin handles validation via serializer_class automatically.
+    def post(self, request, *args, **kwargs):
+        # Calls the CreateModelMixin's create() method
+        return self.create(request, *args, **kwargs)
+
+
+# --- 4. UpdateView (PUT/PATCH update) ---
+class BookUpdateView(mixins.UpdateModelMixin, BookBaseView):
+    """
+    Handles PUT/PATCH requests to update an existing Book instance by PK.
+    Equivalent to a traditional UpdateView.
+    """
+    # Customization Hook (Step 3): Permissions enforced via permission_classes on base view.
+    def put(self, request, *args, **kwargs):
+        # Calls the UpdateModelMixin's update() method
+        return self.update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        # Calls the UpdateModelMixin's partial_update() method
+        return self.partial_update(request, *args, **kwargs)
+
+
+# --- 5. DeleteView (DELETE destroy) ---
+class BookDeleteView(mixins.DestroyModelMixin, BookBaseView):
+    """
+    Handles DELETE request to destroy an existing Book instance by PK.
+    Equivalent to a traditional DeleteView.
+    """
+    # Permissions (Step 4): Permissions enforced via permission_classes on base view.
+    def delete(self, request, *args, **kwargs):
+        # Calls the DestroyModelMixin's destroy() method
+        return self.destroy(request, *args, **kwargs)

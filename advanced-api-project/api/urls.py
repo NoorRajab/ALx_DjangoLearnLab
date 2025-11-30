@@ -1,19 +1,30 @@
-
+# api/urls.py
 from django.urls import path
-from .views import BookListCreate, BookDetailUpdateDelete
+from .views import (
+    BookListView, 
+    BookDetailView, 
+    BookCreateView, 
+    BookUpdateView, 
+    BookDeleteView
+)
 
-# The urlpatterns connect the URLs to the views.
 urlpatterns = [
-    # Endpoint: /api/books/
-    # Maps to ListCreateAPIView: Handles GET (List) and POST (Create)
-    path('books/', BookListCreate.as_view(), name='book-list-create'),
+    # ListView: /api/books/list/ (GET)
+    path('books/list/', BookListView.as_view(), name='book-list'),
 
-    # Endpoint: /api/books/<int:pk>/
-    # Maps to RetrieveUpdateDestroyAPIView: Handles GET (Detail), PUT/PATCH (Update), DELETE (Destroy)
-    path('books/<int:pk>/', BookDetailUpdateDelete.as_view(), name='book-detail-update-delete'),
+    # DetailView: /api/books/detail/<int:pk>/ (GET)
+    path('books/detail/<int:pk>/', BookDetailView.as_view(), name='book-detail'),
+    
+    # CreateView: /api/books/create/ (POST)
+    path('books/create/', BookCreateView.as_view(), name='book-create'),
+
+    # UpdateView: /api/books/update/<int:pk>/ (PUT/PATCH)
+    path('books/update/<int:pk>/', BookUpdateView.as_view(), name='book-update'),
+
+    # DeleteView: /api/books/delete/<int:pk>/ (DELETE)
+    path('books/delete/<int:pk>/', BookDeleteView.as_view(), name='book-delete'),
 ]
 
-# Documentation Summary (Step 6):
-# The URL structure is RESTful, using the plural noun '/books/' for the collection 
-# and adding the primary key '/books/<int:pk>/' for a specific resource. 
-# This ensures clear routing for all CRUD operations.
+# Documentation Requirements (Step 6):
+# The URL patterns are non-standard RESTful, explicitly defining the action (e.g., 'create', 'update', 'delete') 
+# within the path, thereby requiring five separate endpoints to manage the Book resource.
