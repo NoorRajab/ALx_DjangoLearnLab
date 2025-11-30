@@ -1,4 +1,4 @@
-# api/views.py
+from django_filters import rest_framework
 from rest_framework import generics, permissions
 from rest_framework import filters  # Import the filters module
 from django_filters.rest_framework import DjangoFilterBackend # Import the DjangoFilterBackend
