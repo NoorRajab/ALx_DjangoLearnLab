@@ -1,0 +1,33 @@
+{% extends "blog/base.html" %}
+{% load static %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>Welcome, {{ user.username }}!</h2>
+    
+    <h3>Update Your Details</h3>
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+        <p>
+            <label for="id_first_name">First Name:</label>
+            <input type="text" name="first_name" id="id_first_name" value="{{ user.first_name|default:'' }}">
+        </p>
+        <p>
+            <label for="id_last_name">Last Name:</label>
+            <input type="text" name="last_name" id="id_last_name" value="{{ user.last_name|default:'' }}">
+        </p>
+        <p>
+            <label for="id_email">Email:</label>
+            <input type="email" name="email" id="id_email" required value="{{ user.email }}">
+        </p>
+        
+        <button type="submit" class="btn-primary">Save Changes</button>
+    </form>
+    
+    <div class="action-links">
+        <a href="{% url 'password_change' %}">Change Password</a>
+    </div>
+</div>
+{% endblock %}
