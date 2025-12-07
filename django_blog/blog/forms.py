@@ -2,11 +2,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Post # Import the Post model
+from .models import Post, Comment
 
 # Existing Form (from Task 1)
 class CustomUserCreationForm(UserCreationForm):
-    # ... (content remains the same) ...
+    
     email = forms.EmailField(required=True, label="Email")
 
     class Meta:
@@ -25,4 +25,13 @@ class PostForm(forms.ModelForm):
         fields = ['title', 'content'] 
         widgets = {
             'content': forms.Textarea(attrs={'rows': 15, 'cols': 80}),
+        }
+class CommentForm(forms.ModelForm):
+    """Form used for creating and updating comments."""
+    class Meta:
+        model = Comment
+        # Only the content field is needed, as post and author are set by the view.
+        fields = ['content'] 
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Write your comment here...'}),
         }
