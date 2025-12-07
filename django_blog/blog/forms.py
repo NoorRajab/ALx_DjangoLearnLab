@@ -17,12 +17,11 @@ class CustomUserCreationForm(UserCreationForm):
 # New: Post ModelForm
 # ----------------
 class PostForm(forms.ModelForm):
-    """Form used for creating and updating blog posts."""
+    """Form used for creating and updating blog posts, now including tags."""
     class Meta:
         model = Post
-        # We only include title and content, as author is set automatically
-        # and published_date is set by auto_now_add.
-        fields = ['title', 'content'] 
+        # Include the 'tags' field automatically provided by TaggableManager
+        fields = ['title', 'content', 'tags'] 
         widgets = {
             'content': forms.Textarea(attrs={'rows': 15, 'cols': 80}),
         }
