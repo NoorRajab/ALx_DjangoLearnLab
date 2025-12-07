@@ -1,4 +1,4 @@
-# blog/urls.py (Updated)
+# blog/urls.py (Corrected)
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
@@ -7,30 +7,43 @@ from .views import (
     PostDetailView,
     PostCreateView,
     PostUpdateView,
-    PostDeleteView
+    PostDeleteView,
+    CommentCreateView,
+    CommentUpdateView,
+    CommentDeleteView,
+    PostSearchView,
+    PostTagListView,
 )
 
 urlpatterns = [
     # ----------------
-    # CRUD URL Patterns
+    # Post CRUD URL Patterns
     # ----------------
-    # Read: List of Posts
-    path('', PostListView.as_view(), name='post_list'), # Home page is the post list
-    
-    # Create: New Post
+    path('', PostListView.as_view(), name='post_list'),
     path('post/new/', PostCreateView.as_view(), name='post_create'),
-    
-    # Read: Detail View (using the post's primary key <pk>)
     path('post/<int:pk>/', PostDetailView.as_view(), name='post_detail'),
     
-    # Update: Edit Post
-    path('post/<int:pk>/edit/', PostUpdateView.as_view(), name='post_update'),
+    # FIX: Changed the path from 'edit/' to 'update/' as requested,
+    # but kept the descriptive name 'post_update'.
+    path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post_update'),
     
-    # Delete: Delete Post
     path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
 
     # ----------------
-    # Authentication URL Patterns (from Task 1)
+    # Advanced Feature URL Patterns
+    # ----------------
+    path('search/', PostSearchView.as_view(), name='post_search'),
+    path('tags/<slug:tag_slug>/', PostTagListView.as_view(), name='posts_by_tag'),
+
+    # ----------------
+    # Comment URL Patterns
+    # ----------------
+    path('post/<int:post_pk>/comment/new/', CommentCreateView.as_view(), name='comment_create'),
+    path('comment/<int:pk>/edit/', CommentUpdateView.as_view(), name='comment_update'),
+    path('comment/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
+
+    # ----------------
+    # Authentication URL Patterns
     # ----------------
     path('register/', views.register_user, name='register'),
     path('profile/', views.profile_view, name='profile'),
