@@ -1,69 +1,86 @@
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required
+# blog/views.py (Updated)
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
-from django.contrib import messages
-from .forms import CustomUserCreationForm # Import our custom form
-from .models import Post # Assuming Post model is still here
+# ... other imports (register_user, profile_view, CustomUserCreationForm) ...
 
-# ----------------
-# Registration View
-# ----------------
-def register_user(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # Force the email field to be saved on the user object
-            user.email = form.cleaned_data.get('email')
-            user.save()
-            
-            login(request, user) # Automatically log the user in after registration
-            messages.success(request, "Registration successful. Welcome!")
-            return redirect('profile') # Redirect to the profile page
-        else:
-            # Add form errors to messages for display in the template
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field.capitalize()}: {error}")
-    else:
-        form = CustomUserCreationForm()
-        
-    return render(request, 'blog/register.html', {'form': form})
+from .models import Post
+from .forms import PostForm # We will define this PostForm next
 
-# ----------------
-# Profile View (View & Edit)
-# ----------------
-@login_required # Restrict access to logged-in users only
-def profile_view(request):
-    if request.method == 'POST':
-        # Use the built-in UserChangeForm or a custom form for robust editing.
-        # For simplicity, we'll handle basic User model fields directly here.
-        
-        # Security: Only update fields if they are present in the POST data
-        if 'first_name' in request.POST:
-            request.user.first_name = request.POST['first_name']
-        if 'last_name' in request.POST:
-            request.user.last_name = request.POST['last_name']
-        if 'email' in request.POST:
-            request.user.email = request.POST['email']
-        
-        request.user.save()
-        messages.success(request, "Your profile has been updated successfully!")
-        return redirect('profile') # Refresh the profile page
-        
-    context = {
-        'user': request.user,
-        # In a real app, you'd use a form here, e.g., UserChangeForm, for validation
-    }
-    return render(request, 'blog/profile.html', context)
+# ----------------------------------------------------
+# 1. READ Operations (Accessible to all users)
+# ----------------------------------------------------
+
+class PostListView(ListView):
+    """Displays a list of all published blog posts."""
+    model = Post
+    template_name = 'blog/post_list.html'
+    context_object_name = 'posts' # Name of the list variable in the template
+    ordering = ['-published_date'] # Order by newest first
+
+class PostDetailView(DetailView):
+    """Displays a single blog post."""
+    model = Post
+    template_name = 'blog/post_detail.html'
+    context_object_name = 'post'
+
+# ----------------------------------------------------
+# 2. CREATE Operation (Requires login)
+# ----------------------------------------------------
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    """Allows authenticated users to create a new post."""
+    model = Post
+    form_class = PostForm # Use the ModelForm we define in forms.py
+    template_name = 'blog/post_form.html'
     
-# --- Placeholder for Home View (Assuming it exists for redirection) ---
-def home(request):
-    # This is a placeholder for your main blog view
-    # You might want to filter posts by published=True, etc.
-    context = {
-        'posts': Post.objects.all()[:5]
-    }
-    return render(request, 'blog/post_list.html', context)
+    def form_valid(self, form):
+        """Automatically set the author before saving the form."""
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+    
+    # Define where to go after successful creation
+    def get_success_url(self):
+        return reverse_lazy('post_detail', kwargs={'pk': self.object.pk})
+
+# ----------------------------------------------------
+# 3. UPDATE Operation (Requires login and author check)
+# ----------------------------------------------------
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Allows the post author to edit their existing post."""
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/post_form.html'
+
+    def test_func(self):
+        """Check if the logged-in user is the author of the post."""
+        post = self.get_object()
+        return self.request.user == post.author
+        
+    def get_success_url(self):
+        return reverse_lazy('post_detail', kwargs={'pk': self.object.pk})
+
+# ----------------------------------------------------
+# 4. DELETE Operation (Requires login and author check)
+# ----------------------------------------------------
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """Allows the post author to delete their post."""
+    model = Post
+    template_name = 'blog/post_confirm_delete.html'
+    # Define where to go after successful deletion
+    success_url = reverse_lazy('post_list') 
+    
+    def test_func(self):
+        """Check if the logged-in user is the author of the post."""
+        post = self.get_object()
+        return self.request.user == post.author
+
+# --- Placeholder/Existing Views ---
+# Note: Rename the previous 'home' view to 'post_list' to align with CBVs.
+# def home(request):
+#     return render(request, 'blog/post_list.html', {'posts': Post.objects.all()[:5]})

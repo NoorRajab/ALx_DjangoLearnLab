@@ -1,0 +1,24 @@
+{% extends "blog/base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<article class="post-detail">
+    <h2>{{ post.title }}</h2>
+    <div class="post-meta">
+        <span>By: {{ post.author.username }}</span> | 
+        <span>Published: {{ post.published_date|date:"F j, Y, P" }}</span>
+    </div>
+    
+    {% if user.is_authenticated and user == post.author %}
+    <div class="post-actions">
+        <a href="{% url 'post_update' pk=post.pk %}" class="btn-secondary">Edit Post</a>
+        <a href="{% url 'post_delete' pk=post.pk %}" class="btn-danger">Delete Post</a>
+    </div>
+    {% endif %}
+
+    <div class="post-content">
+        <p>{{ post.content|linebreaksbr }}</p>
+    </div>
+</article>
+{% endblock %}
