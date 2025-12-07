@@ -12,7 +12,7 @@ from .views import (
     CommentUpdateView,
     CommentDeleteView,
     PostSearchView,
-    PostTagListView,
+    PostTagListView, # Imported the correct view name: PostTagListView
 )
 
 urlpatterns = [
@@ -29,18 +29,15 @@ urlpatterns = [
     # Advanced Feature URL Patterns
     # ----------------
     path('search/', PostSearchView.as_view(), name='post_search'),
+    
+    # FIX: Using the correct view PostTagListView.as_view()
     path('tags/<slug:tag_slug>/', PostTagListView.as_view(), name='posts_by_tag'),
 
     # ----------------
-    # Comment URL Patterns (FIXED)
+    # Comment URL Patterns
     # ----------------
-    # Create Comment: Uses 'post/<int:pk>/comments/new/'
     path('post/<int:post_pk>/comments/new/', CommentCreateView.as_view(), name='comment_create'),
-    
-    # Update Comment: Uses 'comment/<int:pk>/update/'
     path('comment/<int:pk>/update/', CommentUpdateView.as_view(), name='comment_update'),
-    
-    # Delete Comment (Remains the same path structure for consistency)
     path('comment/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
 
     # ----------------
